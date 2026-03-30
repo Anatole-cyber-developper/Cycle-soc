@@ -1,1 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>SOC Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<div class="container">
+
+  <aside class="sidebar">
+    <h2>🛡️ SOC</h2>
+    <ul>
+      <li>Dashboard</li>
+      <li>Alerts</li>
+      <li>Logs</li>
+    </ul>
+  </aside>
+
+  <main class="main">
+
+    <div class="stats">
+      <div class="card">Attaques: <span id="attacks">0</span></div>
+      <div class="card">Connexions: <span id="users">0</span></div>
+      <div class="card">Menace: <span id="threat">LOW</span></div>
+    </div>
+
+    <div class="logs" id="logs"></div>
+
+  </main>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
