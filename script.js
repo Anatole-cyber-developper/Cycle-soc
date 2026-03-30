@@ -1,7 +1,11 @@
 // ===============================
-// 📦 SELECTORS
+// 📦 CONFIG
 // ===============================
 const API_URL = "https://8030fb56-566e-4059-8ca6-1ed7b7abdbe9-00-pcpb6hunw9ja.riker.replit.dev";
+
+// ===============================
+// 📦 SELECTORS
+// ===============================
 const logsContainer = document.getElementById("logs");
 const attacksEl = document.getElementById("attacks");
 const usersEl = document.getElementById("users");
@@ -12,7 +16,6 @@ const map = document.getElementById("map");
 // ===============================
 // 📊 STATE
 // ===============================
-let attackCount = 0;
 let allLogs = [];
 let currentFilter = "all";
 
@@ -36,18 +39,12 @@ const attackChart = new Chart(ctx, {
     responsive: true,
     plugins: {
       legend: {
-        labels: {
-          color: "#00ff9c"
-        }
+        labels: { color: "#00ff9c" }
       }
     },
     scales: {
-      x: {
-        ticks: { color: "#00ff9c" }
-      },
-      y: {
-        ticks: { color: "#00ff9c" }
-      }
+      x: { ticks: { color: "#00ff9c" } },
+      y: { ticks: { color: "#00ff9c" } }
     }
   }
 });
@@ -134,59 +131,56 @@ function detectAnomaly() {
 }
 
 // ===============================
-// 🎲 GENERATE LOG
+// 📡 FETCH LOGS (BACKEND)
 // ===============================
-function generateLog() {
-  const events = [
-    { text: "Login success", risk: "low" },
-    { text: "Login failed", risk: "medium" },
-    { text: "Brute force attack", risk: "high" },
-    { text: "New device connected", risk: "low" },
-    { text: "Suspicious IP detected", risk: "high" }
-  ];
+async function fetchLogs() {
+  try {
+    const res = await fetch(`${API_URL}/logs`);
+    const data = await res.json();
 
-  const event = events[Math.floor(Math.random() * events.length)];
-  const time = new Date().toLocaleTimeString();
+    allLogs = data;
 
-  // 📦 Store log
-  const logData = {
-    time,
-    text: event.text,
-    risk: event.risk
-  };
+    displayLogs();
+    updateStats();
+    updateChart();
+    simulateUIEffects(data);
 
-  allLogs.push(logData);
+  } catch (err) {
+    console.error("Erreur API:", err);
+  }
+}
 
-  // 📜 Display
-  displayLogs();
+// ===============================
+// 📊 STATS
+// ===============================
+function updateStats() {
+  const high = allLogs.filter(l => l.risk === "high").length;
+  const medium = allLogs.filter(l => l.risk === "medium").length;
 
-  // 🔐 Threat logic
-  if (event.risk === "high") {
-    attackCount++;
-    attacksEl.textContent = attackCount;
+  attacksEl.textContent = high;
+  usersEl.textContent = Math.floor(Math.random() * 100);
+
+  if (high > 5) {
     threatEl.textContent = "HIGH";
     threatEl.style.color = "red";
-
-    showAlert("🚨 " + event.text);
-    showAttackOnMap();
-  }
-
-  if (event.risk === "medium") {
+  } else if (medium > 5) {
     threatEl.textContent = "MEDIUM";
     threatEl.style.color = "orange";
-  }
-
-  if (event.risk === "low") {
+  } else {
     threatEl.textContent = "LOW";
     threatEl.style.color = "#00ff9c";
   }
+}
 
-  // 👥 Users simulation
-  usersEl.textContent = Math.floor(Math.random() * 100);
+// ===============================
+// 📈 CHART UPDATE
+// ===============================
+function updateChart() {
+  const time = new Date().toLocaleTimeString();
+  const high = allLogs.filter(l => l.risk === "high").length;
 
-  // 📊 Chart update
   attackChart.data.labels.push(time);
-  attackChart.data.datasets[0].data.push(attackCount);
+  attackChart.data.datasets[0].data.push(high);
 
   if (attackChart.data.labels.length > 10) {
     attackChart.data.labels.shift();
@@ -197,7 +191,21 @@ function generateLog() {
 }
 
 // ===============================
+// ✨ UI EFFECTS
+// ===============================
+function simulateUIEffects(data) {
+  const last = data[data.length - 1];
+
+  if (!last) return;
+
+  if (last.risk === "high") {
+    showAlert("🚨 " + last.text);
+    showAttackOnMap();
+  }
+}
+
+// ===============================
 // 🔁 LOOPS
 // ===============================
-setInterval(generateLog, 1000);
+setInterval(fetchLogs, 1000);
 setInterval(detectAnomaly, 3000);
