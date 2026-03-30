@@ -1,7 +1,7 @@
-const API_URL = "https://8030fb56-566e-4059-8ca6-1ed7b7abdbe9-00-pcpb6hunw9ja.riker.replit.dev";
 // ===============================
 // 📦 SELECTORS
 // ===============================
+const API_URL = "https://8030fb56-566e-4059-8ca6-1ed7b7abdbe9-00-pcpb6hunw9ja.riker.replit.dev";
 const logsContainer = document.getElementById("logs");
 const attacksEl = document.getElementById("attacks");
 const usersEl = document.getElementById("users");
