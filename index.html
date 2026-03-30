@@ -30,6 +30,15 @@
     <div id="alertBox" class="alert-box"></div>
 
     <div class="logs" id="logs"></div>
+    <div class="controls">
+     <button onclick="filterLogs('all')">ALL</button>
+     <button onclick="filterLogs('high')">HIGH</button>
+     <button onclick="filterLogs('medium')">MEDIUM</button>
+     <button onclick="filterLogs('low')">LOW</button>
+     <button onclick="downloadLogs()">💾 Export</button>
+</div>
+
+<div id="map" class="map"></div>
 
   </main>
 
