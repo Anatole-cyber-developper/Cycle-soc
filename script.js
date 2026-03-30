@@ -1,28 +1,59 @@
-const logs = document.getElementById("logs");
-const attacks = document.getElementById("attacks");
-const users = document.getElementById("users");
-const threat = document.getElementById("threat");
+// ===============================
+// 📦 SELECTORS
+// ===============================
+const logsContainer = document.getElementById("logs");
+const attacksEl = document.getElementById("attacks");
+const usersEl = document.getElementById("users");
+const threatEl = document.getElementById("threat");
 const alertBox = document.getElementById("alertBox");
+const map = document.getElementById("map");
 
+// ===============================
+// 📊 STATE
+// ===============================
 let attackCount = 0;
+let allLogs = [];
+let currentFilter = "all";
 
-// 📊 Graph setup
-const ctx = document.getElementById('attackChart').getContext('2d');
+// ===============================
+// 📈 CHART INIT
+// ===============================
+const ctx = document.getElementById("attackChart").getContext("2d");
 
 const attackChart = new Chart(ctx, {
-  type: 'line',
+  type: "line",
   data: {
     labels: [],
     datasets: [{
-      label: 'Attaques',
+      label: "Attaques",
       data: [],
-      borderColor: '#00ff9c',
+      borderColor: "#00ff9c",
       tension: 0.3
     }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        labels: {
+          color: "#00ff9c"
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: "#00ff9c" }
+      },
+      y: {
+        ticks: { color: "#00ff9c" }
+      }
+    }
   }
 });
 
-// 🚨 Alert function
+// ===============================
+// 🚨 ALERT
+// ===============================
 function showAlert(message) {
   alertBox.textContent = message;
   alertBox.style.display = "block";
@@ -32,7 +63,78 @@ function showAlert(message) {
   }, 2000);
 }
 
-// 🎲 Générateur de logs réaliste
+// ===============================
+// 🌍 MAP ATTACK
+// ===============================
+function showAttackOnMap() {
+  const dot = document.createElement("div");
+
+  dot.style.position = "absolute";
+  dot.style.width = "6px";
+  dot.style.height = "6px";
+  dot.style.background = "red";
+  dot.style.borderRadius = "50%";
+
+  dot.style.top = Math.random() * 180 + "px";
+  dot.style.left = Math.random() * 95 + "%";
+
+  map.appendChild(dot);
+
+  setTimeout(() => dot.remove(), 2000);
+}
+
+// ===============================
+// 📜 DISPLAY LOGS
+// ===============================
+function displayLogs() {
+  logsContainer.innerHTML = "";
+
+  allLogs
+    .filter(log => currentFilter === "all" || log.risk === currentFilter)
+    .forEach(log => {
+      logsContainer.innerHTML += `[${log.time}] ${log.text} <br>`;
+    });
+
+  logsContainer.scrollTop = logsContainer.scrollHeight;
+}
+
+// ===============================
+// 🎯 FILTER
+// ===============================
+function filterLogs(level) {
+  currentFilter = level;
+  displayLogs();
+}
+
+// ===============================
+// 💾 EXPORT LOGS
+// ===============================
+function downloadLogs() {
+  const blob = new Blob([JSON.stringify(allLogs, null, 2)], {
+    type: "application/json"
+  });
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "logs.json";
+  a.click();
+}
+
+// ===============================
+// 🧠 ANOMALY DETECTION
+// ===============================
+function detectAnomaly() {
+  const recent = allLogs.slice(-5);
+  const bruteCount = recent.filter(l => l.text.includes("Brute")).length;
+
+  if (bruteCount >= 3) {
+    showAlert("⚠️ Pattern attaque détecté !");
+  }
+}
+
+// ===============================
+// 🎲 GENERATE LOG
+// ===============================
 function generateLog() {
   const events = [
     { text: "Login success", risk: "low" },
@@ -45,34 +147,43 @@ function generateLog() {
   const event = events[Math.floor(Math.random() * events.length)];
   const time = new Date().toLocaleTimeString();
 
-  const line = `[${time}] ${event.text}`;
+  // 📦 Store log
+  const logData = {
+    time,
+    text: event.text,
+    risk: event.risk
+  };
 
-  logs.innerHTML += line + "<br>";
-  logs.scrollTop = logs.scrollHeight;
+  allLogs.push(logData);
 
-  // 👇 Gestion sécurité
+  // 📜 Display
+  displayLogs();
+
+  // 🔐 Threat logic
   if (event.risk === "high") {
     attackCount++;
-    attacks.textContent = attackCount;
-    threat.textContent = "HIGH";
-    threat.style.color = "red";
+    attacksEl.textContent = attackCount;
+    threatEl.textContent = "HIGH";
+    threatEl.style.color = "red";
 
     showAlert("🚨 " + event.text);
+    showAttackOnMap();
   }
 
   if (event.risk === "medium") {
-    threat.textContent = "MEDIUM";
-    threat.style.color = "orange";
+    threatEl.textContent = "MEDIUM";
+    threatEl.style.color = "orange";
   }
 
   if (event.risk === "low") {
-    threat.textContent = "LOW";
-    threat.style.color = "#00ff9c";
+    threatEl.textContent = "LOW";
+    threatEl.style.color = "#00ff9c";
   }
 
-  users.textContent = Math.floor(Math.random() * 100);
+  // 👥 Users simulation
+  usersEl.textContent = Math.floor(Math.random() * 100);
 
-  // 📊 Update graph
+  // 📊 Chart update
   attackChart.data.labels.push(time);
   attackChart.data.datasets[0].data.push(attackCount);
 
@@ -84,5 +195,8 @@ function generateLog() {
   attackChart.update();
 }
 
-// 🔁 Loop
+// ===============================
+// 🔁 LOOPS
+// ===============================
 setInterval(generateLog, 1000);
+setInterval(detectAnomaly, 3000);
