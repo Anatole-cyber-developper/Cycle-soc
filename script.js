@@ -53,6 +53,8 @@ const attackChart = new Chart(ctx, {
 // 🚨 ALERT
 // ===============================
 function showAlert(message) {
+  if (!alertBox) return;
+
   alertBox.textContent = message;
   alertBox.style.display = "block";
 
@@ -62,9 +64,11 @@ function showAlert(message) {
 }
 
 // ===============================
-// 🌍 MAP ATTACK
+// 🌍 MAP
 // ===============================
 function showAttackOnMap() {
+  if (!map) return;
+
   const dot = document.createElement("div");
 
   dot.style.position = "absolute";
@@ -85,13 +89,17 @@ function showAttackOnMap() {
 // 📜 DISPLAY LOGS
 // ===============================
 function displayLogs() {
+  if (!logsContainer) return;
+
   logsContainer.innerHTML = "";
 
-  allLogs
-    .filter(log => currentFilter === "all" || log.risk === currentFilter)
-    .forEach(log => {
-      logsContainer.innerHTML += `[${log.time}] ${log.text} <br>`;
-    });
+  const filtered = allLogs.filter(
+    log => currentFilter === "all" || log.risk === currentFilter
+  );
+
+  filtered.forEach(log => {
+    logsContainer.innerHTML += `[${log.time}] ${log.text} <br>`;
+  });
 
   logsContainer.scrollTop = logsContainer.scrollHeight;
 }
@@ -105,7 +113,7 @@ function filterLogs(level) {
 }
 
 // ===============================
-// 💾 EXPORT LOGS
+// 💾 EXPORT
 // ===============================
 function downloadLogs() {
   const blob = new Blob([JSON.stringify(allLogs, null, 2)], {
@@ -119,34 +127,14 @@ function downloadLogs() {
 }
 
 // ===============================
-// 🧠 ANOMALY DETECTION
+// 🧠 ANOMALY
 // ===============================
 function detectAnomaly() {
   const recent = allLogs.slice(-5);
-  const bruteCount = recent.filter(l => l.text.includes("Brute")).length;
+  const brute = recent.filter(l => l.text.includes("Brute")).length;
 
-  if (bruteCount >= 3) {
-    showAlert("⚠️ Pattern attaque détecté !");
-  }
-}
-
-// ===============================
-// 📡 FETCH LOGS (BACKEND)
-// ===============================
-async function fetchLogs() {
-  try {
-    const res = await fetch(`${API_URL}/logs`);
-    const data = await res.json();
-
-    allLogs = data;
-
-    displayLogs();
-    updateStats();
-    updateChart();
-    simulateUIEffects(data);
-
-  } catch (err) {
-    console.error("Erreur API:", err);
+  if (brute >= 3) {
+    showAlert("⚠️ Attaque détectée !");
   }
 }
 
@@ -157,8 +145,10 @@ function updateStats() {
   const high = allLogs.filter(l => l.risk === "high").length;
   const medium = allLogs.filter(l => l.risk === "medium").length;
 
-  attacksEl.textContent = high;
-  usersEl.textContent = Math.floor(Math.random() * 100);
+  if (attacksEl) attacksEl.textContent = high;
+  if (usersEl) usersEl.textContent = Math.floor(Math.random() * 100);
+
+  if (!threatEl) return;
 
   if (high > 5) {
     threatEl.textContent = "HIGH";
@@ -173,7 +163,7 @@ function updateStats() {
 }
 
 // ===============================
-// 📈 CHART UPDATE
+// 📈 CHART
 // ===============================
 function updateChart() {
   const time = new Date().toLocaleTimeString();
@@ -191,21 +181,45 @@ function updateChart() {
 }
 
 // ===============================
-// ✨ UI EFFECTS
+// 📡 FETCH LOGS
 // ===============================
-function simulateUIEffects(data) {
-  const last = data[data.length - 1];
+async function fetchLogs() {
+  try {
+    const res = await fetch(`${API_URL}/logs`, { mode: "cors" });
 
-  if (!last) return;
+    if (!res.ok) throw new Error("API error");
 
-  if (last.risk === "high") {
-    showAlert("🚨 " + last.text);
-    showAttackOnMap();
+    const data = await res.json();
+
+    if (!Array.isArray(data)) return;
+
+    allLogs = data;
+
+    displayLogs();
+    updateStats();
+    updateChart();
+
+    const last = data[data.length - 1];
+    if (last && last.risk === "high") {
+      showAlert("🚨 " + last.text);
+      showAttackOnMap();
+    }
+
+  } catch (err) {
+    console.error("Erreur API:", err);
+    if (logsContainer) {
+      logsContainer.innerHTML = "⚠️ Impossible de charger les logs";
+    }
   }
 }
 
 // ===============================
+// 🚀 INIT
+// ===============================
+fetchLogs();
+
+// ===============================
 // 🔁 LOOPS
 // ===============================
-setInterval(fetchLogs, 1000);
+setInterval(fetchLogs, 1500);
 setInterval(detectAnomaly, 3000);
