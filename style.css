@@ -1,1 +1,42 @@
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0b0f14;
+  color: #00ff9c;
+}
 
+.container {
+  display: flex;
+}
+
+.sidebar {
+  width: 200px;
+  background: #0f1720;
+  height: 100vh;
+  padding: 20px;
+}
+
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+.stats {
+  display: flex;
+  gap: 20px;
+}
+
+.card {
+  background: #111827;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.logs {
+  margin-top: 20px;
+  background: black;
+  height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+  font-family: monospace;
+}
