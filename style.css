@@ -68,3 +68,24 @@ canvas {
 .card:hover {
   transform: scale(1.05);
 }
+.controls {
+  margin: 15px 0;
+}
+
+.controls button {
+  margin-right: 10px;
+  padding: 8px;
+  background: #111827;
+  color: #00ff9c;
+  border: none;
+  cursor: pointer;
+}
+
+.map {
+  margin-top: 20px;
+  height: 200px;
+  background: #020617;
+  border: 1px solid #00ff9c33;
+  border-radius: 10px;
+  position: relative;
+}
