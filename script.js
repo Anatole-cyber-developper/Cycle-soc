@@ -181,11 +181,11 @@ function updateChart() {
 }
 
 // ===============================
-// 📡 FETCH LOGS
+// 📡 FETCH LOGS (IMPORTANT)
 // ===============================
 async function fetchLogs() {
   try {
-    const res = await fetch(`${API_URL}/logs`, { mode: "cors" });
+    const res = await fetch(`${API_URL}/logs`);
 
     if (!res.ok) throw new Error("API error");
 
